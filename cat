@@ -1,0 +1,121 @@
+-- AFK Circular Walk FIXED (Stop + Death Safe)
+-- LocalScript
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+
+-- متغيرات عامة
+local character
+local humanoid
+local enabled = false
+local angle = 0
+
+-- إعدادات
+local walkSpeed = 8
+local angularSpeed = 1.5
+
+-- ========== تحميل الشخصية ==========
+local function setupCharacter(char)
+	character = char
+	humanoid = character:WaitForChild("Humanoid")
+
+	-- إذا كان AFK مفعّل قبل الموت، أوقفه
+	enabled = false
+	angle = 0
+	humanoid:Move(Vector3.zero, false)
+end
+
+-- أول تحميل
+setupCharacter(player.Character or player.CharacterAdded:Wait())
+
+-- بعد الموت
+player.CharacterAdded:Connect(setupCharacter)
+
+-- ========== GUI ==========
+local gui = Instance.new("ScreenGui")
+gui.ResetOnSpawn = false
+gui.Parent = player:WaitForChild("PlayerGui")
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 200, 0, 120)
+frame.Position = UDim2.new(0, 20, 0.5, -60)
+frame.BackgroundColor3 = Color3.fromRGB(255, 170, 200)
+frame.BorderSizePixel = 0
+frame.Active = true
+frame.Draggable = true
+frame.Parent = gui
+
+local frameCorner = Instance.new("UICorner")
+frameCorner.CornerRadius = UDim.new(0, 14)
+frameCorner.Parent = frame
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 40)
+title.Position = UDim2.new(0, 0, 0, 5)
+title.BackgroundTransparency = 1
+title.Text = "VI_CAT"
+title.Font = Enum.Font.GothamBlack
+title.TextSize = 22
+title.TextStrokeTransparency = 0.3
+title.Parent = frame
+
+local btn = Instance.new("TextButton")
+btn.Size = UDim2.new(0.9, 0, 0, 40)
+btn.Position = UDim2.new(0.05, 0, 0, 65)
+btn.Text = "تشغيل AFK Walk"
+btn.Font = Enum.Font.GothamBold
+btn.TextSize = 14
+btn.BackgroundColor3 = Color3.fromRGB(255, 105, 180)
+btn.TextColor3 = Color3.new(1,1,1)
+btn.BorderSizePixel = 0
+btn.Parent = frame
+
+local btnCorner = Instance.new("UICorner")
+btnCorner.CornerRadius = UDim.new(0, 12)
+btnCorner.Parent = btn
+
+-- ========== زر تشغيل / إيقاف ==========
+btn.MouseButton1Click:Connect(function()
+	if not humanoid then return end
+
+	enabled = not enabled
+
+	if enabled then
+		humanoid.WalkSpeed = walkSpeed
+		btn.Text = "إيقاف AFK Walk"
+		btn.BackgroundColor3 = Color3.fromRGB(220, 70, 140)
+	else
+		-- إيقاف نظيف 100%
+		angle = 0
+		humanoid:Move(Vector3.zero, false)
+		humanoid.WalkSpeed = walkSpeed
+		btn.Text = "تشغيل AFK Walk"
+		btn.BackgroundColor3 = Color3.fromRGB(255, 105, 180)
+	end
+end)
+
+-- ========== الحركة ==========
+RunService.RenderStepped:Connect(function(dt)
+	if not enabled or not humanoid then return end
+
+	angle += angularSpeed * dt
+	local dir = Vector3.new(
+		math.cos(angle),
+		0,
+		math.sin(angle)
+	)
+
+	humanoid:Move(dir, false)
+end)
+
+-- ========== رينبو الاسم ==========
+task.spawn(function()
+	local hue = 0
+	while true do
+		hue = (hue + 0.01) % 1
+		title.TextColor3 = Color3.fromHSV(hue, 1, 1)
+		task.wait(0.03)
+	end
+end)
