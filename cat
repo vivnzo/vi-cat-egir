@@ -1,121 +1,203 @@
--- AFK Circular Walk FIXED (Stop + Death Safe)
--- LocalScript
+-- VI_CAT AFK + Loader + FX + Close & Minimize
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
 
 local player = Players.LocalPlayer
 
--- متغيرات عامة
-local character
-local humanoid
+-- ================= LOADER =================
+local loaderGui = Instance.new("ScreenGui")
+loaderGui.ResetOnSpawn = false
+loaderGui.Parent = player:WaitForChild("PlayerGui")
+
+local loaderFrame = Instance.new("Frame")
+loaderFrame.Size = UDim2.new(0,260,0,140)
+loaderFrame.Position = UDim2.new(0.5,-130,0.5,-70)
+loaderFrame.BackgroundColor3 = Color3.fromRGB(255,170,200)
+loaderFrame.BorderSizePixel = 0
+loaderFrame.Parent = loaderGui
+Instance.new("UICorner", loaderFrame).CornerRadius = UDim.new(0,18)
+
+local loaderTitle = Instance.new("TextLabel")
+loaderTitle.Size = UDim2.new(1,0,0,50)
+loaderTitle.BackgroundTransparency = 1
+loaderTitle.Text = "VI_CAT LOADER"
+loaderTitle.Font = Enum.Font.GothamBlack
+loaderTitle.TextSize = 24
+loaderTitle.TextStrokeTransparency = 0.4
+loaderTitle.Parent = loaderFrame
+
+task.spawn(function()
+	local h = 0
+	while loaderGui.Parent do
+		h = (h + 0.01) % 1
+		loaderTitle.TextColor3 = Color3.fromHSV(h,1,1)
+		task.wait(0.03)
+	end
+end)
+
+task.wait(2)
+loaderGui:Destroy()
+
+-- ================= AFK CORE =================
+local character, humanoid
 local enabled = false
 local angle = 0
-
--- إعدادات
 local walkSpeed = 8
 local angularSpeed = 1.5
 
--- ========== تحميل الشخصية ==========
 local function setupCharacter(char)
 	character = char
 	humanoid = character:WaitForChild("Humanoid")
-
-	-- إذا كان AFK مفعّل قبل الموت، أوقفه
 	enabled = false
 	angle = 0
-	humanoid:Move(Vector3.zero, false)
+	humanoid:Move(Vector3.zero,false)
 end
 
--- أول تحميل
 setupCharacter(player.Character or player.CharacterAdded:Wait())
-
--- بعد الموت
 player.CharacterAdded:Connect(setupCharacter)
 
--- ========== GUI ==========
+-- ================= GUI =================
 local gui = Instance.new("ScreenGui")
 gui.ResetOnSpawn = false
-gui.Parent = player:WaitForChild("PlayerGui")
+gui.Parent = player.PlayerGui
 
+-- الإطار الرئيسي
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 200, 0, 120)
-frame.Position = UDim2.new(0, 20, 0.5, -60)
-frame.BackgroundColor3 = Color3.fromRGB(255, 170, 200)
+frame.Size = UDim2.new(0,220,0,140)
+frame.Position = UDim2.new(0,20,0.5,-70)
+frame.BackgroundColor3 = Color3.fromRGB(255,170,200)
 frame.BorderSizePixel = 0
 frame.Active = true
 frame.Draggable = true
 frame.Parent = gui
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0,16)
 
-local frameCorner = Instance.new("UICorner")
-frameCorner.CornerRadius = UDim.new(0, 14)
-frameCorner.Parent = frame
+-- شريط علوي
+local top = Instance.new("Frame")
+top.Size = UDim2.new(1,0,0,30)
+top.BackgroundTransparency = 1
+top.Parent = frame
 
+-- زر X
+local closeBtn = Instance.new("TextButton")
+closeBtn.Size = UDim2.new(0,30,0,24)
+closeBtn.Position = UDim2.new(1,-34,0,3)
+closeBtn.Text = "X"
+closeBtn.Font = Enum.Font.GothamBlack
+closeBtn.TextSize = 14
+closeBtn.BackgroundColor3 = Color3.fromRGB(220,80,120)
+closeBtn.TextColor3 = Color3.new(1,1,1)
+closeBtn.BorderSizePixel = 0
+closeBtn.Parent = top
+Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0,8)
+
+-- زر -
+local minBtn = Instance.new("TextButton")
+minBtn.Size = UDim2.new(0,30,0,24)
+minBtn.Position = UDim2.new(1,-68,0,3)
+minBtn.Text = "-"
+minBtn.Font = Enum.Font.GothamBlack
+minBtn.TextSize = 18
+minBtn.BackgroundColor3 = Color3.fromRGB(255,120,180)
+minBtn.TextColor3 = Color3.new(1,1,1)
+minBtn.BorderSizePixel = 0
+minBtn.Parent = top
+Instance.new("UICorner", minBtn).CornerRadius = UDim.new(0,8)
+
+-- اسم VI_CAT
 local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, 0, 0, 40)
-title.Position = UDim2.new(0, 0, 0, 5)
+title.Size = UDim2.new(1,0,0,40)
+title.Position = UDim2.new(0,0,0,30)
 title.BackgroundTransparency = 1
 title.Text = "VI_CAT"
 title.Font = Enum.Font.GothamBlack
 title.TextSize = 22
-title.TextStrokeTransparency = 0.3
+title.TextStrokeTransparency = 0.2
 title.Parent = frame
 
+-- زر AFK
 local btn = Instance.new("TextButton")
-btn.Size = UDim2.new(0.9, 0, 0, 40)
-btn.Position = UDim2.new(0.05, 0, 0, 65)
+btn.Size = UDim2.new(0.9,0,0,44)
+btn.Position = UDim2.new(0.05,0,0,80)
 btn.Text = "تشغيل AFK Walk"
 btn.Font = Enum.Font.GothamBold
 btn.TextSize = 14
-btn.BackgroundColor3 = Color3.fromRGB(255, 105, 180)
+btn.BackgroundColor3 = Color3.fromRGB(255,105,180)
 btn.TextColor3 = Color3.new(1,1,1)
 btn.BorderSizePixel = 0
 btn.Parent = frame
+Instance.new("UICorner", btn).CornerRadius = UDim.new(0,14)
 
-local btnCorner = Instance.new("UICorner")
-btnCorner.CornerRadius = UDim.new(0, 12)
-btnCorner.Parent = btn
+-- ================= أيقونة القطة (عند الإخفاء) =================
+local catBtn = Instance.new("TextButton")
+catBtn.Size = UDim2.new(0,50,0,50)
+catBtn.Position = UDim2.new(0,20,0.5,-25)
+catBtn.Text = "🐱"
+catBtn.Font = Enum.Font.GothamBlack
+catBtn.TextSize = 28
+catBtn.BackgroundColor3 = Color3.fromRGB(255,170,200)
+catBtn.TextColor3 = Color3.new(1,1,1)
+catBtn.BorderSizePixel = 0
+catBtn.Visible = false
+catBtn.Parent = gui
+Instance.new("UICorner", catBtn).CornerRadius = UDim.new(1,0)
 
--- ========== زر تشغيل / إيقاف ==========
+-- ================= FX =================
+task.spawn(function()
+	local h = 0
+	while true do
+		h = (h + 0.01) % 1
+		title.TextColor3 = Color3.fromHSV(h,1,1)
+		task.wait(0.03)
+	end
+end)
+
+TweenService:Create(
+	btn,
+	TweenInfo.new(0.8,Enum.EasingStyle.Sine,Enum.EasingDirection.InOut,-1,true),
+	{BackgroundColor3 = Color3.fromRGB(255,60,150)}
+):Play()
+
+-- ================= أزرار التحكم =================
 btn.MouseButton1Click:Connect(function()
 	if not humanoid then return end
-
 	enabled = not enabled
-
 	if enabled then
 		humanoid.WalkSpeed = walkSpeed
 		btn.Text = "إيقاف AFK Walk"
-		btn.BackgroundColor3 = Color3.fromRGB(220, 70, 140)
 	else
-		-- إيقاف نظيف 100%
 		angle = 0
-		humanoid:Move(Vector3.zero, false)
-		humanoid.WalkSpeed = walkSpeed
+		humanoid:Move(Vector3.zero,false)
 		btn.Text = "تشغيل AFK Walk"
-		btn.BackgroundColor3 = Color3.fromRGB(255, 105, 180)
 	end
 end)
 
--- ========== الحركة ==========
+-- زر -
+minBtn.MouseButton1Click:Connect(function()
+	frame.Visible = false
+	catBtn.Visible = true
+end)
+
+-- زر القطة
+catBtn.MouseButton1Click:Connect(function()
+	frame.Visible = true
+	catBtn.Visible = false
+end)
+
+-- زر X (إغلاق نهائي)
+closeBtn.MouseButton1Click:Connect(function()
+	enabled = false
+	if humanoid then
+		humanoid:Move(Vector3.zero,false)
+	end
+	gui:Destroy()
+end)
+
+-- ================= الحركة =================
 RunService.RenderStepped:Connect(function(dt)
 	if not enabled or not humanoid then return end
-
 	angle += angularSpeed * dt
-	local dir = Vector3.new(
-		math.cos(angle),
-		0,
-		math.sin(angle)
-	)
-
-	humanoid:Move(dir, false)
-end)
-
--- ========== رينبو الاسم ==========
-task.spawn(function()
-	local hue = 0
-	while true do
-		hue = (hue + 0.01) % 1
-		title.TextColor3 = Color3.fromHSV(hue, 1, 1)
-		task.wait(0.03)
-	end
+	humanoid:Move(Vector3.new(math.cos(angle),0,math.sin(angle)),false)
 end)
