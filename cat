@@ -1,5 +1,6 @@
 --==================================
--- VI CAT | AFK + NOCLIP + CAT ICON
+-- VI CAT DELUXE | FULL PREMIUM VERSION
+-- WITH PREMIUM CAT BUTTON NO PINK CIRCLE
 --==================================
 
 -- SERVICES
@@ -7,6 +8,8 @@ local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local VirtualUser = game:GetService("VirtualUser")
 local Stats = game:GetService("Stats")
+local TweenService = game:GetService("TweenService")
+local TeleportService = game:GetService("TeleportService")
 
 local player = Players.LocalPlayer
 
@@ -69,14 +72,35 @@ gui.Parent = player.PlayerGui
 
 -- MAIN FRAME
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0,240,0,240)
-frame.Position = UDim2.new(0.5,-120,0.5,-120)
+frame.Size = UDim2.new(0,260,0,320)
+frame.Position = UDim2.new(0.5,-130,0.5,-160)
 frame.BackgroundColor3 = Color3.fromRGB(255,170,200)
 frame.BorderSizePixel = 0
 frame.Active = true
 frame.Draggable = true
 frame.Parent = gui
-Instance.new("UICorner",frame).CornerRadius = UDim.new(0,18)
+Instance.new("UICorner",frame).CornerRadius = UDim.new(0,20)
+
+-- RAINBOW BACKGROUND
+local grad = Instance.new("UIGradient")
+grad.Color = ColorSequence.new{
+	ColorSequenceKeypoint.new(0,Color3.fromHSV(0,0.8,1)),
+	ColorSequenceKeypoint.new(1,Color3.fromHSV(0.3,0.8,1))
+}
+grad.Rotation = 45
+grad.Parent = frame
+
+task.spawn(function()
+	local h = 0
+	while true do
+		h = (h + 0.003) % 1
+		grad.Color = ColorSequence.new{
+			ColorSequenceKeypoint.new(0,Color3.fromHSV(h,0.8,1)),
+			ColorSequenceKeypoint.new(1,Color3.fromHSV((h+0.3)%1,0.8,1))
+		}
+		task.wait(0.03)
+	end
+end)
 
 -- TITLE
 local title = Instance.new("TextLabel")
@@ -98,81 +122,111 @@ task.spawn(function()
 	end
 end)
 
+-- SOUNDS
+local openSound = Instance.new("Sound")
+openSound.SoundId = "rbxassetid://9118823950"
+openSound.Volume = 0.5
+openSound.Parent = gui
+
+local closeSound = Instance.new("Sound")
+closeSound.SoundId = "rbxassetid://9118824010"
+closeSound.Volume = 0.5
+closeSound.Parent = gui
+
+local clickSound = Instance.new("Sound")
+clickSound.SoundId = "rbxassetid://9118824070"
+clickSound.Volume = 0.4
+clickSound.Parent = gui
+
+-- BUTTON CREATOR (WITH HOVER + SOUND)
+local function createButton(text,pos,color,parent)
+	local btn = Instance.new("TextButton")
+	btn.Size = UDim2.new(0.9,0,0,45)
+	btn.Position = pos
+	btn.Text = text
+	btn.Font = Enum.Font.GothamBold
+	btn.TextSize = 15
+	btn.BackgroundColor3 = color
+	btn.TextColor3 = Color3.new(1,1,1)
+	btn.BorderSizePixel = 0
+	btn.Parent = parent
+	Instance.new("UICorner",btn).CornerRadius = UDim.new(0,14)
+
+	btn.MouseEnter:Connect(function()
+		TweenService:Create(btn,TweenInfo.new(0.1),{BackgroundTransparency=0.3}):Play()
+	end)
+	btn.MouseLeave:Connect(function()
+		TweenService:Create(btn,TweenInfo.new(0.1),{BackgroundTransparency=0}):Play()
+	end)
+
+	return btn
+end
+
+-- BUTTONS
+local afkBtn = createButton("تشغيل AFK",UDim2.new(0.05,0,0,80),Color3.fromRGB(255,110,160),frame)
+local noclipBtn = createButton("NoClip : OFF",UDim2.new(0.05,0,0,135),Color3.fromRGB(255,140,180),frame)
+local rejoinBtn = createButton("Rejoin Server",UDim2.new(0.05,0,0,190),Color3.fromRGB(255,90,160),frame)
+
 -- MINIMIZE BUTTON
 local miniBtn = Instance.new("TextButton")
-miniBtn.Size = UDim2.new(0,30,0,30)
+miniBtn.Size = UDim2.new(0,28,0,28)
 miniBtn.Position = UDim2.new(1,-70,0,5)
 miniBtn.Text = "-"
-miniBtn.Font = Enum.Font.GothamBlack
-miniBtn.TextSize = 22
-miniBtn.BackgroundColor3 = Color3.fromRGB(255,100,150)
-miniBtn.TextColor3 = Color3.new(1,1,1)
+miniBtn.Font = Enum.Font.GothamBold
+miniBtn.TextSize = 20
+miniBtn.BackgroundColor3 = Color3.fromRGB(255,195,210)
+miniBtn.TextColor3 = Color3.fromRGB(255,90,160)
 miniBtn.BorderSizePixel = 0
 miniBtn.Parent = frame
 Instance.new("UICorner",miniBtn).CornerRadius = UDim.new(1,0)
+miniBtn.MouseEnter:Connect(function()
+	TweenService:Create(miniBtn,TweenInfo.new(0.1),{BackgroundColor3=Color3.fromRGB(255,170,200)}):Play()
+end)
+miniBtn.MouseLeave:Connect(function()
+	TweenService:Create(miniBtn,TweenInfo.new(0.1),{BackgroundColor3=Color3.fromRGB(255,195,210)}):Play()
+end)
 
--- CLOSE
+-- CLOSE BUTTON
 local closeBtn = Instance.new("TextButton")
-closeBtn.Size = UDim2.new(0,30,0,30)
+closeBtn.Size = UDim2.new(0,28,0,28)
 closeBtn.Position = UDim2.new(1,-35,0,5)
 closeBtn.Text = "X"
 closeBtn.Font = Enum.Font.GothamBold
 closeBtn.TextSize = 16
-closeBtn.BackgroundColor3 = Color3.fromRGB(255,80,120)
-closeBtn.TextColor3 = Color3.new(1,1,1)
+closeBtn.BackgroundColor3 = Color3.fromRGB(255,180,200)
+closeBtn.TextColor3 = Color3.fromRGB(255,80,140)
 closeBtn.BorderSizePixel = 0
 closeBtn.Parent = frame
 Instance.new("UICorner",closeBtn).CornerRadius = UDim.new(1,0)
+closeBtn.MouseEnter:Connect(function()
+	TweenService:Create(closeBtn,TweenInfo.new(0.1),{BackgroundColor3=Color3.fromRGB(255,150,180)}):Play()
+end)
+closeBtn.MouseLeave:Connect(function()
+	TweenService:Create(closeBtn,TweenInfo.new(0.1),{BackgroundColor3=Color3.fromRGB(255,180,200)}):Play()
+end)
 
--- AFK BUTTON
-local afkBtn = Instance.new("TextButton")
-afkBtn.Size = UDim2.new(0.9,0,0,45)
-afkBtn.Position = UDim2.new(0.05,0,0,60)
-afkBtn.Text = "تشغيل AFK"
-afkBtn.Font = Enum.Font.GothamBold
-afkBtn.TextSize = 15
-afkBtn.BackgroundColor3 = Color3.fromRGB(255,90,150)
-afkBtn.TextColor3 = Color3.new(1,1,1)
-afkBtn.BorderSizePixel = 0
-afkBtn.Parent = frame
-Instance.new("UICorner",afkBtn).CornerRadius = UDim.new(0,14)
-
--- NOCLIP BUTTON
-local noclipBtn = Instance.new("TextButton")
-noclipBtn.Size = UDim2.new(0.9,0,0,45)
-noclipBtn.Position = UDim2.new(0.05,0,0,115)
-noclipBtn.Text = "NoClip : OFF"
-noclipBtn.Font = Enum.Font.GothamBold
-noclipBtn.TextSize = 15
-noclipBtn.BackgroundColor3 = Color3.fromRGB(255,120,170)
-noclipBtn.TextColor3 = Color3.new(1,1,1)
-noclipBtn.BorderSizePixel = 0
-noclipBtn.Parent = frame
-Instance.new("UICorner",noclipBtn).CornerRadius = UDim.new(0,14)
-
--- INFO
+-- INFO LABEL (TOP NEXT TO BUTTONS)
 local info = Instance.new("TextLabel")
-info.Size = UDim2.new(1,-20,0,60)
-info.Position = UDim2.new(0,10,1,-65)
+info.Size = UDim2.new(0,150,0,50)
+info.Position = UDim2.new(1,-160,0,5)
 info.BackgroundTransparency = 1
-info.Font = Enum.Font.Gotham
-info.TextSize = 13
+info.Font = Enum.Font.GothamBold
+info.TextSize = 12
 info.TextColor3 = Color3.new(1,1,1)
-info.TextStrokeTransparency = 0.4
+info.TextStrokeTransparency = 0.3
 info.TextWrapped = true
-info.Parent = frame
+info.TextXAlignment = Enum.TextXAlignment.Right
+info.Parent = gui
 
---==================================
--- CAT ICON
---==================================
+-- CAT ICON PREMIUM BUTTON WITHOUT PINK CIRCLE
 local cat = Instance.new("TextButton")
 cat.Size = UDim2.new(0,60,0,60)
 cat.Position = UDim2.new(0.5,-30,0.5,-30)
 cat.Text = "🐱"
 cat.TextSize = 32
-cat.Font = Enum.Font.GothamBold
-cat.BackgroundColor3 = Color3.fromRGB(255,150,190)
-cat.TextColor3 = Color3.new(1,1,1)
+cat.Font = Enum.Font.GothamBlack
+cat.TextColor3 = Color3.fromRGB(255,255,255)
+cat.BackgroundColor3 = Color3.fromRGB(255,150,200)
 cat.Visible = false
 cat.Active = true
 cat.Draggable = true
@@ -180,17 +234,60 @@ cat.BorderSizePixel = 0
 cat.Parent = gui
 Instance.new("UICorner",cat).CornerRadius = UDim.new(1,0)
 
---==================================
+-- Gradient Background
+local gradCat = Instance.new("UIGradient")
+gradCat.Color = ColorSequence.new{
+	ColorSequenceKeypoint.new(0,Color3.fromRGB(255,150,200)),
+	ColorSequenceKeypoint.new(1,Color3.fromRGB(255,100,180))
+}
+gradCat.Rotation = 45
+gradCat.Parent = cat
+
+-- Hover Scale + Pulse
+task.spawn(function()
+	while true do
+		for i=0,1,0.03 do
+			cat.TextColor3 = Color3.fromHSV((tick()*0.2)%1,0.8,1)
+			task.wait(0.03)
+		end
+	end
+end)
+
+cat.MouseEnter:Connect(function()
+	TweenService:Create(cat,TweenInfo.new(0.1),{Size = UDim2.new(0,70,0,70)}):Play()
+end)
+cat.MouseLeave:Connect(function()
+	TweenService:Create(cat,TweenInfo.new(0.1),{Size = UDim2.new(0,60,0,60)}):Play()
+end)
+
+-- TWEEN FUNCTION
+local function tweenFrame(open)
+	local tweenInfo = TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+	if open then
+		frame.Visible = true
+		frame.Size = UDim2.new(0,0,0,0)
+		openSound:Play()
+		TweenService:Create(frame, tweenInfo, {Size = UDim2.new(0,260,0,320)}):Play()
+	else
+		closeSound:Play()
+		local tween = TweenService:Create(frame, tweenInfo, {Size = UDim2.new(0,0,0,0)})
+		tween:Play()
+		tween.Completed:Wait()
+		frame.Visible = false
+	end
+end
+
 -- BUTTON LOGIC
---==================================
 miniBtn.MouseButton1Click:Connect(function()
-	frame.Visible = false
+	tweenFrame(false)
 	cat.Visible = true
+	clickSound:Play()
 end)
 
 cat.MouseButton1Click:Connect(function()
-	frame.Visible = true
+	tweenFrame(true)
 	cat.Visible = false
+	clickSound:Play()
 end)
 
 closeBtn.MouseButton1Click:Connect(function()
@@ -198,8 +295,10 @@ closeBtn.MouseButton1Click:Connect(function()
 	noclipEnabled = false
 	disableNoClip()
 	gui:Destroy()
+	clickSound:Play()
 end)
 
+-- AFK LOGIC
 afkBtn.MouseButton1Click:Connect(function()
 	if not humanoid then return end
 	enabled = not enabled
@@ -211,8 +310,10 @@ afkBtn.MouseButton1Click:Connect(function()
 		humanoid:Move(Vector3.zero,false)
 		afkBtn.Text = "تشغيل AFK"
 	end
+	clickSound:Play()
 end)
 
+-- NOCLIP LOGIC
 noclipBtn.MouseButton1Click:Connect(function()
 	noclipEnabled = not noclipEnabled
 	if noclipEnabled then
@@ -221,11 +322,16 @@ noclipBtn.MouseButton1Click:Connect(function()
 		noclipBtn.Text = "NoClip : OFF"
 		disableNoClip()
 	end
+	clickSound:Play()
 end)
 
---==================================
--- AFK MOVE
---==================================
+-- REJOIN LOGIC
+rejoinBtn.MouseButton1Click:Connect(function()
+	TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, player)
+	clickSound:Play()
+end)
+
+-- AFK MOVEMENT
 RunService.RenderStepped:Connect(function(dt)
 	if enabled and humanoid then
 		angle += dt * 1.5
@@ -233,9 +339,7 @@ RunService.RenderStepped:Connect(function(dt)
 	end
 end)
 
---==================================
 -- INFO UPDATE
---==================================
 local startTime = tick()
 local fps, frames = 0, 0
 local last = tick()
@@ -257,8 +361,8 @@ task.spawn(function()
 			Stats.Network.ServerStatsItem["Data Ping"]:GetValue()
 		)
 		info.Text =
-			"⏱ AFK: "..m.."m "..s.."s\n"..
-			"🎮 FPS: "..fps.."\n"..
-			"📡 Ping: "..ping.." ms"
+			"⏱ "..m.."m "..s.."s\n"..
+			"🎮 "..fps.." FPS\n"..
+			"📡 "..ping.." ms"
 	end
 end)
