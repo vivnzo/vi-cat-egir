@@ -1,150 +1,94 @@
--- VI_CAT AFK + Loader + FX + Close & Minimize
+--==================================
+-- VI CAT | AFK + NOCLIP + CAT ICON
+--==================================
 
+-- SERVICES
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-local TweenService = game:GetService("TweenService")
+local VirtualUser = game:GetService("VirtualUser")
+local Stats = game:GetService("Stats")
 
 local player = Players.LocalPlayer
 
--- ================= LOADER =================
-local loaderGui = Instance.new("ScreenGui")
-loaderGui.ResetOnSpawn = false
-loaderGui.Parent = player:WaitForChild("PlayerGui")
+--==================================
+-- ANTI AFK
+--==================================
+player.Idled:Connect(function()
+	VirtualUser:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+	task.wait(1)
+	VirtualUser:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+end)
 
-local loaderFrame = Instance.new("Frame")
-loaderFrame.Size = UDim2.new(0,260,0,140)
-loaderFrame.Position = UDim2.new(0.5,-130,0.5,-70)
-loaderFrame.BackgroundColor3 = Color3.fromRGB(255,170,200)
-loaderFrame.BorderSizePixel = 0
-loaderFrame.Parent = loaderGui
-Instance.new("UICorner", loaderFrame).CornerRadius = UDim.new(0,18)
+--==================================
+-- CHARACTER
+--==================================
+local humanoid
+local enabled = false
+local noclipEnabled = false
+local angle = 0
 
-local loaderTitle = Instance.new("TextLabel")
-loaderTitle.Size = UDim2.new(1,0,0,50)
-loaderTitle.BackgroundTransparency = 1
-loaderTitle.Text = "VI_CAT LOADER"
-loaderTitle.Font = Enum.Font.GothamBlack
-loaderTitle.TextSize = 24
-loaderTitle.TextStrokeTransparency = 0.4
-loaderTitle.Parent = loaderFrame
+local function setupChar(char)
+	humanoid = char:WaitForChild("Humanoid")
+	enabled = false
+	noclipEnabled = false
+	angle = 0
+end
 
-task.spawn(function()
-	local h = 0
-	while loaderGui.Parent do
-		h = (h + 0.01) % 1
-		loaderTitle.TextColor3 = Color3.fromHSV(h,1,1)
-		task.wait(0.03)
+setupChar(player.Character or player.CharacterAdded:Wait())
+player.CharacterAdded:Connect(setupChar)
+
+--==================================
+-- NOCLIP
+--==================================
+RunService.Stepped:Connect(function()
+	if noclipEnabled and player.Character then
+		for _,v in ipairs(player.Character:GetDescendants()) do
+			if v:IsA("BasePart") then
+				v.CanCollide = false
+			end
+		end
 	end
 end)
 
-task.wait(2)
-loaderGui:Destroy()
-
--- ================= AFK CORE =================
-local character, humanoid
-local enabled = false
-local angle = 0
-local walkSpeed = 8
-local angularSpeed = 1.5
-
-local function setupCharacter(char)
-	character = char
-	humanoid = character:WaitForChild("Humanoid")
-	enabled = false
-	angle = 0
-	humanoid:Move(Vector3.zero,false)
+local function disableNoClip()
+	if player.Character then
+		for _,v in ipairs(player.Character:GetDescendants()) do
+			if v:IsA("BasePart") then
+				v.CanCollide = true
+			end
+		end
+	end
 end
 
-setupCharacter(player.Character or player.CharacterAdded:Wait())
-player.CharacterAdded:Connect(setupCharacter)
-
--- ================= GUI =================
+--==================================
+-- GUI
+--==================================
 local gui = Instance.new("ScreenGui")
 gui.ResetOnSpawn = false
 gui.Parent = player.PlayerGui
 
--- الإطار الرئيسي
+-- MAIN FRAME
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0,220,0,140)
-frame.Position = UDim2.new(0,20,0.5,-70)
+frame.Size = UDim2.new(0,240,0,240)
+frame.Position = UDim2.new(0.5,-120,0.5,-120)
 frame.BackgroundColor3 = Color3.fromRGB(255,170,200)
 frame.BorderSizePixel = 0
 frame.Active = true
 frame.Draggable = true
 frame.Parent = gui
-Instance.new("UICorner", frame).CornerRadius = UDim.new(0,16)
+Instance.new("UICorner",frame).CornerRadius = UDim.new(0,18)
 
--- شريط علوي
-local top = Instance.new("Frame")
-top.Size = UDim2.new(1,0,0,30)
-top.BackgroundTransparency = 1
-top.Parent = frame
-
--- زر X
-local closeBtn = Instance.new("TextButton")
-closeBtn.Size = UDim2.new(0,30,0,24)
-closeBtn.Position = UDim2.new(1,-34,0,3)
-closeBtn.Text = "X"
-closeBtn.Font = Enum.Font.GothamBlack
-closeBtn.TextSize = 14
-closeBtn.BackgroundColor3 = Color3.fromRGB(220,80,120)
-closeBtn.TextColor3 = Color3.new(1,1,1)
-closeBtn.BorderSizePixel = 0
-closeBtn.Parent = top
-Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0,8)
-
--- زر -
-local minBtn = Instance.new("TextButton")
-minBtn.Size = UDim2.new(0,30,0,24)
-minBtn.Position = UDim2.new(1,-68,0,3)
-minBtn.Text = "-"
-minBtn.Font = Enum.Font.GothamBlack
-minBtn.TextSize = 18
-minBtn.BackgroundColor3 = Color3.fromRGB(255,120,180)
-minBtn.TextColor3 = Color3.new(1,1,1)
-minBtn.BorderSizePixel = 0
-minBtn.Parent = top
-Instance.new("UICorner", minBtn).CornerRadius = UDim.new(0,8)
-
--- اسم VI_CAT
+-- TITLE
 local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1,0,0,40)
-title.Position = UDim2.new(0,0,0,30)
+title.Position = UDim2.new(0,0,0,5)
 title.BackgroundTransparency = 1
-title.Text = "VI_CAT"
+title.Text = "VI CAT"
 title.Font = Enum.Font.GothamBlack
 title.TextSize = 22
 title.TextStrokeTransparency = 0.2
 title.Parent = frame
 
--- زر AFK
-local btn = Instance.new("TextButton")
-btn.Size = UDim2.new(0.9,0,0,44)
-btn.Position = UDim2.new(0.05,0,0,80)
-btn.Text = "تشغيل AFK Walk"
-btn.Font = Enum.Font.GothamBold
-btn.TextSize = 14
-btn.BackgroundColor3 = Color3.fromRGB(255,105,180)
-btn.TextColor3 = Color3.new(1,1,1)
-btn.BorderSizePixel = 0
-btn.Parent = frame
-Instance.new("UICorner", btn).CornerRadius = UDim.new(0,14)
-
--- ================= أيقونة القطة (عند الإخفاء) =================
-local catBtn = Instance.new("TextButton")
-catBtn.Size = UDim2.new(0,50,0,50)
-catBtn.Position = UDim2.new(0,20,0.5,-25)
-catBtn.Text = "🐱"
-catBtn.Font = Enum.Font.GothamBlack
-catBtn.TextSize = 28
-catBtn.BackgroundColor3 = Color3.fromRGB(255,170,200)
-catBtn.TextColor3 = Color3.new(1,1,1)
-catBtn.BorderSizePixel = 0
-catBtn.Visible = false
-catBtn.Parent = gui
-Instance.new("UICorner", catBtn).CornerRadius = UDim.new(1,0)
-
--- ================= FX =================
 task.spawn(function()
 	local h = 0
 	while true do
@@ -154,50 +98,167 @@ task.spawn(function()
 	end
 end)
 
-TweenService:Create(
-	btn,
-	TweenInfo.new(0.8,Enum.EasingStyle.Sine,Enum.EasingDirection.InOut,-1,true),
-	{BackgroundColor3 = Color3.fromRGB(255,60,150)}
-):Play()
+-- MINIMIZE BUTTON
+local miniBtn = Instance.new("TextButton")
+miniBtn.Size = UDim2.new(0,30,0,30)
+miniBtn.Position = UDim2.new(1,-70,0,5)
+miniBtn.Text = "-"
+miniBtn.Font = Enum.Font.GothamBlack
+miniBtn.TextSize = 22
+miniBtn.BackgroundColor3 = Color3.fromRGB(255,100,150)
+miniBtn.TextColor3 = Color3.new(1,1,1)
+miniBtn.BorderSizePixel = 0
+miniBtn.Parent = frame
+Instance.new("UICorner",miniBtn).CornerRadius = UDim.new(1,0)
 
--- ================= أزرار التحكم =================
-btn.MouseButton1Click:Connect(function()
-	if not humanoid then return end
-	enabled = not enabled
-	if enabled then
-		humanoid.WalkSpeed = walkSpeed
-		btn.Text = "إيقاف AFK Walk"
-	else
-		angle = 0
-		humanoid:Move(Vector3.zero,false)
-		btn.Text = "تشغيل AFK Walk"
-	end
-end)
+-- CLOSE
+local closeBtn = Instance.new("TextButton")
+closeBtn.Size = UDim2.new(0,30,0,30)
+closeBtn.Position = UDim2.new(1,-35,0,5)
+closeBtn.Text = "X"
+closeBtn.Font = Enum.Font.GothamBold
+closeBtn.TextSize = 16
+closeBtn.BackgroundColor3 = Color3.fromRGB(255,80,120)
+closeBtn.TextColor3 = Color3.new(1,1,1)
+closeBtn.BorderSizePixel = 0
+closeBtn.Parent = frame
+Instance.new("UICorner",closeBtn).CornerRadius = UDim.new(1,0)
 
--- زر -
-minBtn.MouseButton1Click:Connect(function()
+-- AFK BUTTON
+local afkBtn = Instance.new("TextButton")
+afkBtn.Size = UDim2.new(0.9,0,0,45)
+afkBtn.Position = UDim2.new(0.05,0,0,60)
+afkBtn.Text = "تشغيل AFK"
+afkBtn.Font = Enum.Font.GothamBold
+afkBtn.TextSize = 15
+afkBtn.BackgroundColor3 = Color3.fromRGB(255,90,150)
+afkBtn.TextColor3 = Color3.new(1,1,1)
+afkBtn.BorderSizePixel = 0
+afkBtn.Parent = frame
+Instance.new("UICorner",afkBtn).CornerRadius = UDim.new(0,14)
+
+-- NOCLIP BUTTON
+local noclipBtn = Instance.new("TextButton")
+noclipBtn.Size = UDim2.new(0.9,0,0,45)
+noclipBtn.Position = UDim2.new(0.05,0,0,115)
+noclipBtn.Text = "NoClip : OFF"
+noclipBtn.Font = Enum.Font.GothamBold
+noclipBtn.TextSize = 15
+noclipBtn.BackgroundColor3 = Color3.fromRGB(255,120,170)
+noclipBtn.TextColor3 = Color3.new(1,1,1)
+noclipBtn.BorderSizePixel = 0
+noclipBtn.Parent = frame
+Instance.new("UICorner",noclipBtn).CornerRadius = UDim.new(0,14)
+
+-- INFO
+local info = Instance.new("TextLabel")
+info.Size = UDim2.new(1,-20,0,60)
+info.Position = UDim2.new(0,10,1,-65)
+info.BackgroundTransparency = 1
+info.Font = Enum.Font.Gotham
+info.TextSize = 13
+info.TextColor3 = Color3.new(1,1,1)
+info.TextStrokeTransparency = 0.4
+info.TextWrapped = true
+info.Parent = frame
+
+--==================================
+-- CAT ICON
+--==================================
+local cat = Instance.new("TextButton")
+cat.Size = UDim2.new(0,60,0,60)
+cat.Position = UDim2.new(0.5,-30,0.5,-30)
+cat.Text = "🐱"
+cat.TextSize = 32
+cat.Font = Enum.Font.GothamBold
+cat.BackgroundColor3 = Color3.fromRGB(255,150,190)
+cat.TextColor3 = Color3.new(1,1,1)
+cat.Visible = false
+cat.Active = true
+cat.Draggable = true
+cat.BorderSizePixel = 0
+cat.Parent = gui
+Instance.new("UICorner",cat).CornerRadius = UDim.new(1,0)
+
+--==================================
+-- BUTTON LOGIC
+--==================================
+miniBtn.MouseButton1Click:Connect(function()
 	frame.Visible = false
-	catBtn.Visible = true
+	cat.Visible = true
 end)
 
--- زر القطة
-catBtn.MouseButton1Click:Connect(function()
+cat.MouseButton1Click:Connect(function()
 	frame.Visible = true
-	catBtn.Visible = false
+	cat.Visible = false
 end)
 
--- زر X (إغلاق نهائي)
 closeBtn.MouseButton1Click:Connect(function()
 	enabled = false
-	if humanoid then
-		humanoid:Move(Vector3.zero,false)
-	end
+	noclipEnabled = false
+	disableNoClip()
 	gui:Destroy()
 end)
 
--- ================= الحركة =================
+afkBtn.MouseButton1Click:Connect(function()
+	if not humanoid then return end
+	enabled = not enabled
+	if enabled then
+		humanoid.WalkSpeed = 8
+		afkBtn.Text = "إيقاف AFK"
+	else
+		angle = 0
+		humanoid:Move(Vector3.zero,false)
+		afkBtn.Text = "تشغيل AFK"
+	end
+end)
+
+noclipBtn.MouseButton1Click:Connect(function()
+	noclipEnabled = not noclipEnabled
+	if noclipEnabled then
+		noclipBtn.Text = "NoClip : ON"
+	else
+		noclipBtn.Text = "NoClip : OFF"
+		disableNoClip()
+	end
+end)
+
+--==================================
+-- AFK MOVE
+--==================================
 RunService.RenderStepped:Connect(function(dt)
-	if not enabled or not humanoid then return end
-	angle += angularSpeed * dt
-	humanoid:Move(Vector3.new(math.cos(angle),0,math.sin(angle)),false)
+	if enabled and humanoid then
+		angle += dt * 1.5
+		humanoid:Move(Vector3.new(math.cos(angle),0,math.sin(angle)),false)
+	end
+end)
+
+--==================================
+-- INFO UPDATE
+--==================================
+local startTime = tick()
+local fps, frames = 0, 0
+local last = tick()
+
+RunService.RenderStepped:Connect(function()
+	frames += 1
+	if tick() - last >= 1 then
+		fps = frames
+		frames = 0
+		last = tick()
+	end
+end)
+
+task.spawn(function()
+	while task.wait(1) do
+		local t = math.floor(tick() - startTime)
+		local m,s = math.floor(t/60), t%60
+		local ping = math.floor(
+			Stats.Network.ServerStatsItem["Data Ping"]:GetValue()
+		)
+		info.Text =
+			"⏱ AFK: "..m.."m "..s.."s\n"..
+			"🎮 FPS: "..fps.."\n"..
+			"📡 Ping: "..ping.." ms"
+	end
 end)
