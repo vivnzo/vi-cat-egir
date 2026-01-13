@@ -1,5 +1,5 @@
 --==================================
--- VI CAT DELUXE | FULL + ESP SIZE + X/MIN
+-- VI CAT DELUXE | FULL FINAL VERSION
 --==================================
 
 -- SERVICES
@@ -62,14 +62,25 @@ local function disableNoClip()
 end
 
 --==================================
+-- RESET (SELF ONLY)
+--==================================
+local function resetSelf()
+	noclipEnabled = false
+	disableNoClip()
+	if humanoid then
+		humanoid.Health = 0
+	end
+end
+
+--==================================
 -- GUI
 --==================================
 local gui = Instance.new("ScreenGui",player.PlayerGui)
 gui.ResetOnSpawn = false
 
 local frame = Instance.new("Frame",gui)
-frame.Size = UDim2.new(0,260,0,380)
-frame.Position = UDim2.new(0.5,-130,0.5,-190)
+frame.Size = UDim2.new(0,260,0,450)
+frame.Position = UDim2.new(0.5,-130,0.5,-225)
 frame.Active = true
 frame.Draggable = true
 frame.BorderSizePixel = 0
@@ -110,26 +121,26 @@ task.spawn(function()
 end)
 
 --==================================
--- INFO (TIME / FPS / PING)
+-- INFO (FPS / PING / TIME)
 --==================================
 local info = Instance.new("TextLabel",gui)
-info.Size = UDim2.new(0,150,0,50)
-info.Position = UDim2.new(1,-160,0,5)
+info.Size = UDim2.new(0,160,0,60)
+info.Position = UDim2.new(1,-170,0,5)
 info.BackgroundTransparency = 1
 info.Font = Enum.Font.GothamBold
 info.TextSize = 12
 info.TextColor3 = Color3.new(1,1,1)
 info.TextStrokeTransparency = 0.3
-info.TextWrapped = true
 info.TextXAlignment = Enum.TextXAlignment.Right
+info.TextWrapped = true
 
 --==================================
 -- BUTTON CREATOR
 --==================================
-local function createButton(text,pos,size,color)
-	local btn = Instance.new("TextButton",frame)
-	btn.Size = size
+local function createButton(text,pos,size,color,parent)
+	local btn = Instance.new("TextButton",parent)
 	btn.Position = pos
+	btn.Size = size
 	btn.Text = text
 	btn.Font = Enum.Font.GothamBold
 	btn.TextSize = 14
@@ -141,18 +152,32 @@ local function createButton(text,pos,size,color)
 end
 
 -- MAIN BUTTONS
-local afkBtn    = createButton("تشغيل AFK",UDim2.new(0.05,0,0,80),UDim2.new(0.9,0,0,45),Color3.fromRGB(255,110,160))
-local noclipBtn = createButton("NoClip : OFF",UDim2.new(0.05,0,0,135),UDim2.new(0.9,0,0,45),Color3.fromRGB(255,140,180))
-local rejoinBtn = createButton("Rejoin Server",UDim2.new(0.05,0,0,190),UDim2.new(0.9,0,0,45),Color3.fromRGB(255,90,160))
-
--- ESP SIZE CONTROL
-local espSize = 6
-local espMinus = createButton("-",UDim2.new(0.05,0,0,245),UDim2.new(0,45,0,45),Color3.fromRGB(160,110,255))
-local espBtn   = createButton("ESP",UDim2.new(0.5,-35,0,245),UDim2.new(0,70,0,45),Color3.fromRGB(180,120,255))
-local espPlus  = createButton("+",UDim2.new(1,-50,0,245),UDim2.new(0,45,0,45),Color3.fromRGB(160,110,255))
+local afkBtn    = createButton("تشغيل AFK",UDim2.new(0.05,0,0,80),UDim2.new(0.9,0,0,45),Color3.fromRGB(255,110,160),frame)
+local noclipBtn = createButton("NoClip : OFF",UDim2.new(0.05,0,0,135),UDim2.new(0.9,0,0,45),Color3.fromRGB(255,140,180),frame)
+local rejoinBtn = createButton("Rejoin Server",UDim2.new(0.05,0,0,190),UDim2.new(0.9,0,0,45),Color3.fromRGB(255,90,160),frame)
+local resetBtn  = createButton("Reset Character",UDim2.new(0.05,0,0,245),UDim2.new(0.9,0,0,45),Color3.fromRGB(255,80,80),frame)
+local quickBtn  = createButton("اختصار الريست",UDim2.new(0.05,0,0,300),UDim2.new(0.9,0,0,40),Color3.fromRGB(180,80,80),frame)
 
 --==================================
--- MINIMIZE / CLOSE BUTTONS
+-- ESP SIZE (CENTERED)
+--==================================
+local espSize = 6
+local espHolder = Instance.new("Frame",frame)
+espHolder.Size = UDim2.new(0.9,0,0,45)
+espHolder.Position = UDim2.new(0.05,0,0,350)
+espHolder.BackgroundTransparency = 1
+
+local layout = Instance.new("UIListLayout",espHolder)
+layout.FillDirection = Enum.FillDirection.Horizontal
+layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+layout.Padding = UDim.new(0,10)
+
+local espMinus = createButton("-",UDim2.new(),UDim2.new(0,45,0,45),Color3.fromRGB(160,110,255),espHolder)
+local espBtn   = createButton("ESP",UDim2.new(),UDim2.new(0,80,0,45),Color3.fromRGB(180,120,255),espHolder)
+local espPlus  = createButton("+",UDim2.new(),UDim2.new(0,45,0,45),Color3.fromRGB(160,110,255),espHolder)
+
+--==================================
+-- MIN / CLOSE / CAT
 --==================================
 local miniBtn = Instance.new("TextButton",frame)
 miniBtn.Size = UDim2.new(0,28,0,28)
@@ -184,55 +209,40 @@ catBtn.BorderSizePixel = 0
 Instance.new("UICorner",catBtn).CornerRadius = UDim.new(1,0)
 
 --==================================
--- TOGGLE GUI
+-- QUICK RESET FLOAT BUTTON
 --==================================
-local function toggle(open)
-	local t = TweenInfo.new(0.15,Enum.EasingStyle.Quad)
-	if open then
-		frame.Visible = true
-		frame.Size = UDim2.new(0,0,0,0)
-		TweenService:Create(frame,t,{Size=UDim2.new(0,260,0,380)}):Play()
-	else
-		local tw = TweenService:Create(frame,t,{Size=UDim2.new(0,0,0,0)})
-		tw:Play()
-		tw.Completed:Wait()
-		frame.Visible = false
-	end
-end
-
-miniBtn.MouseButton1Click:Connect(function()
-	toggle(false)
-	catBtn.Visible = true
-end)
-
-catBtn.MouseButton1Click:Connect(function()
-	toggle(true)
-	catBtn.Visible = false
-end)
-
-closeBtn.MouseButton1Click:Connect(function()
-	gui:Destroy()
-end)
+local quickReset = Instance.new("TextButton",gui)
+quickReset.Size = UDim2.new(0,55,0,55)
+quickReset.Position = UDim2.new(0.5,-27,0.7,0)
+quickReset.Text = "☠"
+quickReset.TextSize = 28
+quickReset.Visible = false
+quickReset.Active = true
+quickReset.Draggable = true
+quickReset.BackgroundColor3 = Color3.fromRGB(200,50,50)
+quickReset.TextColor3 = Color3.new(1,1,1)
+quickReset.BorderSizePixel = 0
+Instance.new("UICorner",quickReset).CornerRadius = UDim.new(1,0)
 
 --==================================
--- ESP FUNCTIONS
+-- ESP LOGIC
 --==================================
 local espFolder = Instance.new("Folder",gui)
 
 local function refreshESP()
 	for _,bb in ipairs(espFolder:GetChildren()) do
-		if bb:IsA("BillboardGui") then
-			bb.Size = UDim2.new(0,espSize,0,espSize)
-		end
+		bb.Size = UDim2.new(0,espSize,0,espSize)
 	end
 end
 
 local function addESP(plr)
-	if plr == player then return end
-	if not plr.Character then return end
+	if plr == player or not plr.Character then return end
 	local head = plr.Character:FindFirstChild("Head")
 	if not head then return end
-	if espFolder:FindFirstChild(plr.Name) then return end
+
+	if espFolder:FindFirstChild(plr.Name) then
+		espFolder[plr.Name]:Destroy()
+	end
 
 	local bb = Instance.new("BillboardGui",espFolder)
 	bb.Name = plr.Name
@@ -245,10 +255,6 @@ local function addESP(plr)
 	dot.BackgroundColor3 = Color3.new(1,1,1)
 	dot.BorderSizePixel = 0
 	Instance.new("UICorner",dot).CornerRadius = UDim.new(1,0)
-end
-
-local function clearESP()
-	espFolder:ClearAllChildren()
 end
 
 --==================================
@@ -269,35 +275,34 @@ rejoinBtn.MouseButton1Click:Connect(function()
 	TeleportService:TeleportToPlaceInstance(game.PlaceId,game.JobId,player)
 end)
 
+resetBtn.MouseButton1Click:Connect(resetSelf)
+quickReset.MouseButton1Click:Connect(resetSelf)
+
+local quickEnabled = false
+quickBtn.MouseButton1Click:Connect(function()
+	quickEnabled = not quickEnabled
+	quickReset.Visible = quickEnabled
+	quickBtn.Text = quickEnabled and "إيقاف اختصار الريست" or "اختصار الريست"
+end)
+
 espBtn.MouseButton1Click:Connect(function()
 	espEnabled = not espEnabled
 	espBtn.Text = espEnabled and "ESP ON" or "ESP"
 	if espEnabled then
-		for _,p in ipairs(Players:GetPlayers()) do
-			addESP(p)
-		end
+		for _,p in ipairs(Players:GetPlayers()) do addESP(p) end
 	else
-		clearESP()
+		espFolder:ClearAllChildren()
 	end
 end)
 
 espPlus.MouseButton1Click:Connect(function()
-	espSize = math.clamp(espSize + 2, 4, 20)
+	espSize = math.clamp(espSize + 2,4,20)
 	refreshESP()
 end)
 
 espMinus.MouseButton1Click:Connect(function()
-	espSize = math.clamp(espSize - 2, 4, 20)
+	espSize = math.clamp(espSize - 2,4,20)
 	refreshESP()
-end)
-
-Players.PlayerAdded:Connect(function(p)
-	p.CharacterAdded:Connect(function()
-		if espEnabled then
-			task.wait(1)
-			addESP(p)
-		end
-	end)
 end)
 
 --==================================
@@ -311,7 +316,7 @@ RunService.RenderStepped:Connect(function(dt)
 end)
 
 --==================================
--- INFO UPDATE
+-- FPS / TIME / PING
 --==================================
 local startTime = tick()
 local fps, frames = 0, 0
@@ -336,4 +341,37 @@ task.spawn(function()
 			"🎮 "..fps.." FPS\n"..
 			"📡 "..ping.." ms"
 	end
+end)
+
+--==================================
+-- UI TOGGLE
+--==================================
+local function toggle(open)
+	local t = TweenInfo.new(0.15,Enum.EasingStyle.Quad)
+	if open then
+		frame.Visible = true
+		frame.Size = UDim2.new(0,0,0,0)
+		TweenService:Create(frame,t,{Size=UDim2.new(0,260,0,450)}):Play()
+	else
+		local tw = TweenService:Create(frame,t,{Size=UDim2.new(0,0,0,0)})
+		tw:Play()
+		tw.Completed:Wait()
+		frame.Visible = false
+	end
+end
+
+miniBtn.MouseButton1Click:Connect(function()
+	toggle(false)
+	catBtn.Visible = true
+end)
+
+catBtn.MouseButton1Click:Connect(function()
+	toggle(true)
+	catBtn.Visible = false
+end)
+
+closeBtn.MouseButton1Click:Connect(function()
+	noclipEnabled = false
+	disableNoClip()
+	gui:Destroy()
 end)
