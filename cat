@@ -1,377 +1,336 @@
 --==================================
--- VI CAT DELUXE | FULL FINAL VERSION
+-- VI CAT DELUXE | ULTRA PRO EDITION
+-- FULL SCRIPT: 270+ LINES 
 --==================================
 
--- SERVICES
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-local VirtualUser = game:GetService("VirtualUser")
 local TweenService = game:GetService("TweenService")
 local TeleportService = game:GetService("TeleportService")
-local Stats = game:GetService("Stats")
 
 local player = Players.LocalPlayer
+local startTime = tick()
+
+-- THEME COLORS
+local THEME = {
+    MainPink = Color3.fromRGB(255, 105, 180),
+    LightPink = Color3.fromRGB(255, 182, 193),
+    Purple = Color3.fromRGB(150, 100, 255),
+    DarkBg = Color3.fromRGB(35, 25, 40),
+    ToggleOff = Color3.fromRGB(120, 80, 130),
+    ToggleOn = Color3.fromRGB(255, 105, 180),
+    InfoBg = Color3.fromRGB(45, 35, 50)
+}
+
+-- MAIN GUI
+local gui = Instance.new("ScreenGui", player.PlayerGui)
+gui.Name = "ViCat_Ultra_Final"
+gui.ResetOnSpawn = false
+gui.IgnoreGuiInset = true
 
 --==================================
--- ANTI AFK
+-- 1. FIX: LOADING SCREEN (TOP LAYER)
 --==================================
-player.Idled:Connect(function()
-	VirtualUser:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
-	task.wait(1)
-	VirtualUser:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+local loadingScreen = Instance.new("Frame", gui)
+loadingScreen.Size = UDim2.new(1, 0, 1, 0)
+loadingScreen.BackgroundColor3 = THEME.DarkBg
+loadingScreen.ZIndex = 999 -- فوق كل شيء
+loadingScreen.Visible = true
+
+local loadTitle = Instance.new("TextLabel", loadingScreen)
+loadTitle.Size = UDim2.new(1, 0, 0, 100)
+loadTitle.Position = UDim2.new(0, 0, 0.4, 0)
+loadTitle.Text = "💖 VI CAT DELUXE 💖"
+loadTitle.Font = Enum.Font.GothamBlack
+loadTitle.TextColor3 = THEME.MainPink
+loadTitle.TextSize = 40
+loadTitle.BackgroundTransparency = 1
+loadTitle.ZIndex = 1000
+
+local barBack = Instance.new("Frame", loadingScreen)
+barBack.Size = UDim2.new(0, 400, 0, 10)
+barBack.Position = UDim2.new(0.5, -200, 0.5, 50)
+barBack.BackgroundColor3 = Color3.fromRGB(60, 50, 70)
+barBack.BorderSizePixel = 0
+barBack.ZIndex = 1000
+Instance.new("UICorner", barBack).CornerRadius = UDim.new(1, 0)
+
+local barFill = Instance.new("Frame", barBack)
+barFill.Size = UDim2.new(0, 0, 1, 0)
+barFill.BackgroundColor3 = THEME.MainPink
+barFill.BorderSizePixel = 0
+barFill.ZIndex = 1001
+Instance.new("UICorner", barFill).CornerRadius = UDim.new(1, 0)
+
+--==================================
+-- 2. MAIN INTERFACE (HIDDEN AT START)
+--==================================
+local topBar = Instance.new("Frame", gui)
+topBar.Name = "TopBar"
+topBar.Size = UDim2.new(0, 260, 0, 32)
+topBar.Position = UDim2.new(0.5, -130, 0.4, 0)
+topBar.BackgroundColor3 = THEME.DarkBg
+topBar.BackgroundTransparency = 0.2
+topBar.Active = true
+topBar.Draggable = true
+topBar.Visible = false -- مخفي حتى ينتهي التحميل
+Instance.new("UICorner", topBar).CornerRadius = UDim.new(0, 10)
+
+local title = Instance.new("TextLabel", topBar)
+title.Size = UDim2.new(1, -70, 1, 0)
+title.Position = UDim2.new(0, 12, 0, 0)
+title.Text = "💖 VI CAT DELUXE 💖"
+title.Font = Enum.Font.GothamBold
+title.TextColor3 = THEME.MainPink
+title.TextSize = 13
+title.TextXAlignment = Enum.TextXAlignment.Left
+title.BackgroundTransparency = 1
+
+local closeBtn = Instance.new("TextButton", topBar)
+closeBtn.Size = UDim2.new(0, 24, 0, 24)
+closeBtn.Position = UDim2.new(1, -28, 0.5, -12)
+closeBtn.Text = "✕"
+closeBtn.TextColor3 = Color3.new(1, 0.4, 0.4)
+closeBtn.BackgroundTransparency = 0.6
+closeBtn.Font = Enum.Font.GothamBold
+Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0, 6)
+
+local minBtn = Instance.new("TextButton", topBar)
+minBtn.Size = UDim2.new(0, 24, 0, 24)
+minBtn.Position = UDim2.new(1, -56, 0.5, -12)
+minBtn.Text = "—"
+minBtn.TextColor3 = Color3.new(1, 1, 1)
+minBtn.BackgroundTransparency = 0.6
+minBtn.Font = Enum.Font.GothamBold
+Instance.new("UICorner", minBtn).CornerRadius = UDim.new(0, 6)
+
+local mainContent = Instance.new("Frame", topBar)
+mainContent.Name = "MainContent"
+mainContent.Size = UDim2.new(1, 0, 0, 360)
+mainContent.Position = UDim2.new(0, 0, 1, 0)
+mainContent.BackgroundColor3 = THEME.Purple
+mainContent.BackgroundTransparency = 0.2
+mainContent.ClipsDescendants = true
+Instance.new("UICorner", mainContent).CornerRadius = UDim.new(0, 12)
+
+local grad = Instance.new("UIGradient", mainContent)
+task.spawn(function()
+    local h = 0
+    while true do
+        h = (h + 0.005) % 1
+        grad.Color = ColorSequence.new(Color3.fromHSV(h, 0.6, 1), Color3.fromHSV((h+0.3)%1, 0.6, 1))
+        task.wait(0.02)
+    end
 end)
 
 --==================================
--- CHARACTER
+-- 3. SYSTEMS & LOGIC
 --==================================
 local humanoid
-local afkEnabled = false
-local noclipEnabled = false
-local espEnabled = false
+local afkEnabled, noclipEnabled, espEnabled, infoEnabled = false, false, false, false
 local angle = 0
 
 local function setupChar(char)
-	humanoid = char:WaitForChild("Humanoid")
-	angle = 0
+    humanoid = char:WaitForChild("Humanoid")
 end
-
 setupChar(player.Character or player.CharacterAdded:Wait())
 player.CharacterAdded:Connect(setupChar)
 
---==================================
--- NOCLIP
---==================================
-RunService.Stepped:Connect(function()
-	if noclipEnabled and player.Character then
-		for _,v in ipairs(player.Character:GetDescendants()) do
-			if v:IsA("BasePart") then
-				v.CanCollide = false
-			end
-		end
-	end
-end)
-
-local function disableNoClip()
-	if player.Character then
-		for _,v in ipairs(player.Character:GetDescendants()) do
-			if v:IsA("BasePart") then
-				v.CanCollide = true
-			end
-		end
-	end
-end
-
---==================================
--- RESET (SELF ONLY)
---==================================
-local function resetSelf()
-	noclipEnabled = false
-	disableNoClip()
-	if humanoid then
-		humanoid.Health = 0
-	end
-end
-
---==================================
--- GUI
---==================================
-local gui = Instance.new("ScreenGui",player.PlayerGui)
-gui.ResetOnSpawn = false
-
-local frame = Instance.new("Frame",gui)
-frame.Size = UDim2.new(0,260,0,450)
-frame.Position = UDim2.new(0.5,-130,0.5,-225)
-frame.Active = true
-frame.Draggable = true
-frame.BorderSizePixel = 0
-Instance.new("UICorner",frame).CornerRadius = UDim.new(0,20)
-
--- GRADIENT
-local grad = Instance.new("UIGradient",frame)
-grad.Rotation = 45
-task.spawn(function()
-	local h = 0
-	while true do
-		h = (h + 0.003) % 1
-		grad.Color = ColorSequence.new{
-			ColorSequenceKeypoint.new(0,Color3.fromHSV(h,0.8,1)),
-			ColorSequenceKeypoint.new(1,Color3.fromHSV((h+0.3)%1,0.8,1))
-		}
-		task.wait(0.03)
-	end
-end)
-
--- TITLE
-local title = Instance.new("TextLabel",frame)
-title.Size = UDim2.new(1,0,0,40)
-title.Position = UDim2.new(0,0,0,5)
-title.BackgroundTransparency = 1
-title.Text = "VI CAT"
-title.Font = Enum.Font.GothamBlack
-title.TextSize = 22
-title.TextStrokeTransparency = 0.2
-
-task.spawn(function()
-	local h = 0
-	while true do
-		h = (h + 0.01) % 1
-		title.TextColor3 = Color3.fromHSV(h,1,1)
-		task.wait(0.03)
-	end
-end)
-
---==================================
--- INFO (FPS / PING / TIME)
---==================================
-local info = Instance.new("TextLabel",gui)
-info.Size = UDim2.new(0,160,0,60)
-info.Position = UDim2.new(1,-170,0,5)
-info.BackgroundTransparency = 1
-info.Font = Enum.Font.GothamBold
-info.TextSize = 12
-info.TextColor3 = Color3.new(1,1,1)
-info.TextStrokeTransparency = 0.3
-info.TextXAlignment = Enum.TextXAlignment.Right
-info.TextWrapped = true
-
---==================================
--- BUTTON CREATOR
---==================================
-local function createButton(text,pos,size,color,parent)
-	local btn = Instance.new("TextButton",parent)
-	btn.Position = pos
-	btn.Size = size
-	btn.Text = text
-	btn.Font = Enum.Font.GothamBold
-	btn.TextSize = 14
-	btn.BackgroundColor3 = color
-	btn.TextColor3 = Color3.new(1,1,1)
-	btn.BorderSizePixel = 0
-	Instance.new("UICorner",btn).CornerRadius = UDim.new(0,14)
-	return btn
-end
-
--- MAIN BUTTONS
-local afkBtn    = createButton("تشغيل AFK",UDim2.new(0.05,0,0,80),UDim2.new(0.9,0,0,45),Color3.fromRGB(255,110,160),frame)
-local noclipBtn = createButton("NoClip : OFF",UDim2.new(0.05,0,0,135),UDim2.new(0.9,0,0,45),Color3.fromRGB(255,140,180),frame)
-local rejoinBtn = createButton("Rejoin Server",UDim2.new(0.05,0,0,190),UDim2.new(0.9,0,0,45),Color3.fromRGB(255,90,160),frame)
-local resetBtn  = createButton("Reset Character",UDim2.new(0.05,0,0,245),UDim2.new(0.9,0,0,45),Color3.fromRGB(255,80,80),frame)
-local quickBtn  = createButton("اختصار الريست",UDim2.new(0.05,0,0,300),UDim2.new(0.9,0,0,40),Color3.fromRGB(180,80,80),frame)
-
---==================================
--- ESP SIZE (CENTERED)
---==================================
-local espSize = 6
-local espHolder = Instance.new("Frame",frame)
-espHolder.Size = UDim2.new(0.9,0,0,45)
-espHolder.Position = UDim2.new(0.05,0,0,350)
-espHolder.BackgroundTransparency = 1
-
-local layout = Instance.new("UIListLayout",espHolder)
-layout.FillDirection = Enum.FillDirection.Horizontal
-layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-layout.Padding = UDim.new(0,10)
-
-local espMinus = createButton("-",UDim2.new(),UDim2.new(0,45,0,45),Color3.fromRGB(160,110,255),espHolder)
-local espBtn   = createButton("ESP",UDim2.new(),UDim2.new(0,80,0,45),Color3.fromRGB(180,120,255),espHolder)
-local espPlus  = createButton("+",UDim2.new(),UDim2.new(0,45,0,45),Color3.fromRGB(160,110,255),espHolder)
-
---==================================
--- MIN / CLOSE / CAT
---==================================
-local miniBtn = Instance.new("TextButton",frame)
-miniBtn.Size = UDim2.new(0,28,0,28)
-miniBtn.Position = UDim2.new(1,-70,0,6)
-miniBtn.Text = "-"
-miniBtn.Font = Enum.Font.GothamBold
-miniBtn.TextSize = 20
-miniBtn.BorderSizePixel = 0
-Instance.new("UICorner",miniBtn).CornerRadius = UDim.new(1,0)
-
-local closeBtn = Instance.new("TextButton",frame)
-closeBtn.Size = UDim2.new(0,28,0,28)
-closeBtn.Position = UDim2.new(1,-35,0,6)
-closeBtn.Text = "X"
-closeBtn.Font = Enum.Font.GothamBold
-closeBtn.TextSize = 16
-closeBtn.BorderSizePixel = 0
-Instance.new("UICorner",closeBtn).CornerRadius = UDim.new(1,0)
-
-local catBtn = Instance.new("TextButton",gui)
-catBtn.Size = UDim2.new(0,60,0,60)
-catBtn.Position = UDim2.new(0.5,-30,0.5,-30)
-catBtn.Text = "🐱"
-catBtn.TextSize = 32
-catBtn.Visible = false
-catBtn.Active = true
-catBtn.Draggable = true
-catBtn.BorderSizePixel = 0
-Instance.new("UICorner",catBtn).CornerRadius = UDim.new(1,0)
-
---==================================
--- QUICK RESET FLOAT BUTTON
---==================================
-local quickReset = Instance.new("TextButton",gui)
-quickReset.Size = UDim2.new(0,55,0,55)
-quickReset.Position = UDim2.new(0.5,-27,0.7,0)
-quickReset.Text = "☠"
-quickReset.TextSize = 28
-quickReset.Visible = false
-quickReset.Active = true
-quickReset.Draggable = true
-quickReset.BackgroundColor3 = Color3.fromRGB(200,50,50)
-quickReset.TextColor3 = Color3.new(1,1,1)
-quickReset.BorderSizePixel = 0
-Instance.new("UICorner",quickReset).CornerRadius = UDim.new(1,0)
-
---==================================
--- ESP LOGIC
---==================================
-local espFolder = Instance.new("Folder",gui)
-
-local function refreshESP()
-	for _,bb in ipairs(espFolder:GetChildren()) do
-		bb.Size = UDim2.new(0,espSize,0,espSize)
-	end
-end
-
-local function addESP(plr)
-	if plr == player or not plr.Character then return end
-	local head = plr.Character:FindFirstChild("Head")
-	if not head then return end
-
-	if espFolder:FindFirstChild(plr.Name) then
-		espFolder[plr.Name]:Destroy()
-	end
-
-	local bb = Instance.new("BillboardGui",espFolder)
-	bb.Name = plr.Name
-	bb.Adornee = head
-	bb.Size = UDim2.new(0,espSize,0,espSize)
-	bb.AlwaysOnTop = true
-
-	local dot = Instance.new("Frame",bb)
-	dot.Size = UDim2.new(1,0,1,0)
-	dot.BackgroundColor3 = Color3.new(1,1,1)
-	dot.BorderSizePixel = 0
-	Instance.new("UICorner",dot).CornerRadius = UDim.new(1,0)
-end
-
---==================================
--- BUTTON LOGIC
---==================================
-afkBtn.MouseButton1Click:Connect(function()
-	afkEnabled = not afkEnabled
-	afkBtn.Text = afkEnabled and "إيقاف AFK" or "تشغيل AFK"
-end)
-
-noclipBtn.MouseButton1Click:Connect(function()
-	noclipEnabled = not noclipEnabled
-	noclipBtn.Text = noclipEnabled and "NoClip : ON" or "NoClip : OFF"
-	if not noclipEnabled then disableNoClip() end
-end)
-
-rejoinBtn.MouseButton1Click:Connect(function()
-	TeleportService:TeleportToPlaceInstance(game.PlaceId,game.JobId,player)
-end)
-
-resetBtn.MouseButton1Click:Connect(resetSelf)
-quickReset.MouseButton1Click:Connect(resetSelf)
-
-local quickEnabled = false
-quickBtn.MouseButton1Click:Connect(function()
-	quickEnabled = not quickEnabled
-	quickReset.Visible = quickEnabled
-	quickBtn.Text = quickEnabled and "إيقاف اختصار الريست" or "اختصار الريست"
-end)
-
-espBtn.MouseButton1Click:Connect(function()
-	espEnabled = not espEnabled
-	espBtn.Text = espEnabled and "ESP ON" or "ESP"
-	if espEnabled then
-		for _,p in ipairs(Players:GetPlayers()) do addESP(p) end
-	else
-		espFolder:ClearAllChildren()
-	end
-end)
-
-espPlus.MouseButton1Click:Connect(function()
-	espSize = math.clamp(espSize + 2,4,20)
-	refreshESP()
-end)
-
-espMinus.MouseButton1Click:Connect(function()
-	espSize = math.clamp(espSize - 2,4,20)
-	refreshESP()
-end)
-
---==================================
--- AFK MOVE
---==================================
 RunService.RenderStepped:Connect(function(dt)
-	if afkEnabled and humanoid then
-		angle += dt * 1.5
-		humanoid:Move(Vector3.new(math.cos(angle),0,math.sin(angle)),false)
-	end
+    if afkEnabled and humanoid then
+        angle += dt * 1.5
+        humanoid:Move(Vector3.new(math.cos(angle),0,math.sin(angle)),false)
+    end
 end)
 
---==================================
--- FPS / TIME / PING
---==================================
-local startTime = tick()
-local fps, frames = 0, 0
-local last = tick()
+RunService.Stepped:Connect(function()
+    if noclipEnabled and player.Character then
+        for _,v in ipairs(player.Character:GetDescendants()) do
+            if v:IsA("BasePart") then v.CanCollide = false end
+        end
+    end
+end)
 
+local function Notify(text)
+    local notif = Instance.new("Frame", gui)
+    notif.Size = UDim2.new(0, 200, 0, 40)
+    notif.Position = UDim2.new(1, 20, 1, -60)
+    notif.BackgroundColor3 = THEME.DarkBg
+    notif.BackgroundTransparency = 0.2
+    notif.ZIndex = 2000
+    Instance.new("UICorner", notif).CornerRadius = UDim.new(0, 10)
+    
+    local line = Instance.new("Frame", notif)
+    line.Size = UDim2.new(0, 4, 1, 0)
+    line.BackgroundColor3 = THEME.MainPink
+    Instance.new("UICorner", line)
+    
+    local txt = Instance.new("TextLabel", notif)
+    txt.Size = UDim2.new(1, -15, 1, 0)
+    txt.Position = UDim2.new(0, 10, 0, 0)
+    txt.Text = "💖 "..text
+    txt.TextColor3 = Color3.new(1,1,1)
+    txt.Font = Enum.Font.GothamBold
+    txt.TextSize = 12
+    txt.BackgroundTransparency = 1
+    txt.TextXAlignment = Enum.TextXAlignment.Left
+    
+    notif:TweenPosition(UDim2.new(1, -210, 1, -60), "Out", "Back", 0.5, true)
+    task.spawn(function()
+        task.wait(3)
+        notif:TweenPosition(UDim2.new(1, 20, 1, -60), "In", "Quad", 0.5, true)
+        task.wait(0.5)
+        notif:Destroy()
+    end)
+end
+
+--==================================
+-- 4. BUTTONS & TOGGLES CREATOR
+--==================================
+local function addToggle(text, index, callback)
+    local frame = Instance.new("Frame", mainContent)
+    frame.Size = UDim2.new(1, -20, 0, 42)
+    frame.Position = UDim2.new(0, 10, 0, 15 + (index-1)*48)
+    frame.BackgroundTransparency = 1
+
+    local lbl = Instance.new("TextLabel", frame)
+    lbl.Size = UDim2.new(0.6, 0, 1, 0)
+    lbl.Text = text
+    lbl.Font = Enum.Font.GothamBold
+    lbl.TextColor3 = Color3.new(1,1,1)
+    lbl.TextSize = 13
+    lbl.TextXAlignment = Enum.TextXAlignment.Left
+    lbl.BackgroundTransparency = 1
+
+    local sw = Instance.new("TextButton", frame)
+    sw.Size = UDim2.new(0, 38, 0, 20)
+    sw.Position = UDim2.new(1, -40, 0.5, -10)
+    sw.BackgroundColor3 = THEME.ToggleOff
+    sw.Text = ""
+    Instance.new("UICorner", sw).CornerRadius = UDim.new(1, 0)
+
+    local dot = Instance.new("Frame", sw)
+    dot.Size = UDim2.new(0, 14, 0, 14)
+    dot.Position = UDim2.new(0, 3, 0.5, -7)
+    dot.BackgroundColor3 = Color3.new(1,1,1)
+    Instance.new("UICorner", dot).CornerRadius = UDim.new(1, 0)
+
+    local active = false
+    sw.MouseButton1Click:Connect(function()
+        active = not active
+        TweenService:Create(dot, TweenInfo.new(0.2), {Position = active and UDim2.new(1, -17, 0.5, -7) or UDim2.new(0, 3, 0.5, -7)}):Play()
+        TweenService:Create(sw, TweenInfo.new(0.2), {BackgroundColor3 = active and THEME.ToggleOn or THEME.ToggleOff}):Play()
+        Notify(text..": "..(active and "Enabled" or "Disabled"))
+        callback(active)
+    end)
+end
+
+local function addActionBtn(text, index, color, callback)
+    local btn = Instance.new("TextButton", mainContent)
+    btn.Size = UDim2.new(1, -20, 0, 35)
+    btn.Position = UDim2.new(0, 10, 0, 220 + (index-1)*45)
+    btn.BackgroundColor3 = color
+    btn.Text = "💖 "..text.." 💖"
+    btn.Font = Enum.Font.GothamBold
+    btn.TextColor3 = Color3.new(1,1,1)
+    btn.TextSize = 12
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
+    btn.MouseButton1Click:Connect(function()
+        Notify("Running: "..text)
+        callback()
+    end)
+end
+
+--==================================
+-- 5. INFO PANEL
+--==================================
+local infoFrame = Instance.new("Frame", gui)
+infoFrame.Size = UDim2.new(0, 150, 0, 65)
+infoFrame.Position = UDim2.new(1, -170, 0, 15)
+infoFrame.BackgroundColor3 = THEME.InfoBg
+infoFrame.Visible = false
+Instance.new("UICorner", infoFrame).CornerRadius = UDim.new(0, 8)
+
+local fpsL = Instance.new("TextLabel", infoFrame)
+fpsL.Size = UDim2.new(1, -10, 0, 18); fpsL.Position = UDim2.new(0, 8, 0, 5)
+fpsL.Font = "GothamBold"; fpsL.TextColor3 = THEME.MainPink; fpsL.TextSize = 12; fpsL.TextXAlignment = "Left"; fpsL.BackgroundTransparency = 1
+
+local pingL = Instance.new("TextLabel", infoFrame)
+pingL.Size = UDim2.new(1, -10, 0, 18); pingL.Position = UDim2.new(0, 8, 0, 23)
+pingL.Font = "GothamBold"; pingL.TextColor3 = THEME.LightPink; pingL.TextSize = 12; pingL.TextXAlignment = "Left"; pingL.BackgroundTransparency = 1
+
+local timeL = Instance.new("TextLabel", infoFrame)
+timeL.Size = UDim2.new(1, -10, 0, 18); timeL.Position = UDim2.new(0, 8, 0, 41)
+timeL.Font = "GothamBold"; timeL.TextColor3 = THEME.Purple; timeL.TextSize = 12; timeL.TextXAlignment = "Left"; timeL.BackgroundTransparency = 1
+
+-- POPULATE CONTENT
+addToggle("AFK Spin Mode", 1, function(v) afkEnabled = v end)
+addToggle("No-Clip Walls", 2, function(v) noclipEnabled = v end)
+addToggle("Player ESP", 3, function(v) espEnabled = v if not v then for _,x in pairs(gui:GetChildren()) do if x.Name:find("_ESP") then x:Destroy() end end end end)
+addToggle("Show Live Stats", 4, function(v) infoEnabled = v infoFrame.Visible = v end)
+
+addActionBtn("REJOIN SERVER", 1, THEME.MainPink, function() TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, player) end)
+addActionBtn("QUICK RESET", 2, THEME.Purple, function() if player.Character:FindFirstChild("Humanoid") then player.Character.Humanoid.Health = 0 end end)
+
+--==================================
+-- 6. UPDATER & ESP
+--==================================
+local lastFT = tick()
 RunService.RenderStepped:Connect(function()
-	frames += 1
-	if tick() - last >= 1 then
-		fps = frames
-		frames = 0
-		last = tick()
-	end
+    if infoEnabled then
+        local now = tick()
+        fpsL.Text = "⚡ FPS: "..math.floor(1/(now - lastFT))
+        lastFT = now
+        pingL.Text = "🌐 Ping: "..math.floor(player:GetNetworkPing() * 1000).." ms"
+        local elap = math.floor(tick() - startTime)
+        timeL.Text = string.format("⏰ Time: %02d:%02d:%02d", math.floor(elap/3600), math.floor((elap%3600)/60), elap%60)
+    end
 end)
 
 task.spawn(function()
-	while task.wait(1) do
-		local t = math.floor(tick() - startTime)
-		local m,s = math.floor(t/60), t%60
-		local ping = math.floor(Stats.Network.ServerStatsItem["Data Ping"]:GetValue())
-		info.Text =
-			"⏱ "..m.."m "..s.."s\n"..
-			"🎮 "..fps.." FPS\n"..
-			"📡 "..ping.." ms"
-	end
+    while task.wait(0.5) do
+        if espEnabled then
+            for _, p in ipairs(Players:GetPlayers()) do
+                if p ~= player and p.Character and p.Character:FindFirstChild("Head") then
+                    local bb = gui:FindFirstChild(p.Name.."_ESP") or Instance.new("BillboardGui", gui)
+                    bb.Name = p.Name.."_ESP"; bb.Adornee = p.Character.Head; bb.Size = UDim2.new(0, 8, 0, 8); bb.AlwaysOnTop = true
+                    if not bb:FindFirstChild("Dot") then
+                        local f = Instance.new("Frame", bb); f.Size = UDim2.new(1,0,1,0); f.BackgroundColor3 = THEME.MainPink; Instance.new("UICorner", f).CornerRadius = UDim.new(1,0)
+                    end
+                end
+            end
+        end
+    end
 end)
+
+minBtn.MouseButton1Click:Connect(function() mainContent.Visible = not mainContent.Visible minBtn.Text = mainContent.Visible and "—" or "➕" end)
+closeBtn.MouseButton1Click:Connect(function() gui:Destroy() end)
 
 --==================================
--- UI TOGGLE
+-- 7. EXECUTION ANIMATION
 --==================================
-local function toggle(open)
-	local t = TweenInfo.new(0.15,Enum.EasingStyle.Quad)
-	if open then
-		frame.Visible = true
-		frame.Size = UDim2.new(0,0,0,0)
-		TweenService:Create(frame,t,{Size=UDim2.new(0,260,0,450)}):Play()
-	else
-		local tw = TweenService:Create(frame,t,{Size=UDim2.new(0,0,0,0)})
-		tw:Play()
-		tw.Completed:Wait()
-		frame.Visible = false
-	end
-end
-
-miniBtn.MouseButton1Click:Connect(function()
-	toggle(false)
-	catBtn.Visible = true
-end)
-
-catBtn.MouseButton1Click:Connect(function()
-	toggle(true)
-	catBtn.Visible = false
-end)
-
-closeBtn.MouseButton1Click:Connect(function()
-	noclipEnabled = false
-	disableNoClip()
-	gui:Destroy()
+task.spawn(function()
+    -- أنيميشن الشريط
+    local barTween = TweenService:Create(barFill, TweenInfo.new(2.5, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {Size = UDim2.new(1, 0, 1, 0)})
+    barTween:Play()
+    barTween.Completed:Wait()
+    
+    task.wait(0.3)
+    
+    -- تلاشي شاشة التحميل
+    local fade = TweenService:Create(loadingScreen, TweenInfo.new(0.7), {BackgroundTransparency = 1})
+    TweenService:Create(loadTitle, TweenInfo.new(0.5), {TextTransparency = 1}):Play()
+    TweenService:Create(barBack, TweenInfo.new(0.5), {BackgroundTransparency = 1}):Play()
+    TweenService:Create(barFill, TweenInfo.new(0.5), {BackgroundTransparency = 1}):Play()
+    fade:Play()
+    fade.Completed:Wait()
+    loadingScreen:Destroy()
+    
+    -- إظهار السكربت مع أنيميشن Pop-up
+    topBar.Visible = true
+    topBar.Size = UDim2.new(0, 0, 0, 0)
+    TweenService:Create(topBar, TweenInfo.new(0.6, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Size = UDim2.new(0, 260, 0, 32)}):Play()
+    
+    task.wait(0.6)
+    Notify("Vi Cat Deluxe Activated! 💖")
 end)
